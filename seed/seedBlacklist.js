@@ -40,7 +40,7 @@ const run = async () => {
                 $set: { isBlacklisted: true, botEnabled: false, isKnown: true },
                 $setOnInsert: { jid, number: String(number).replace(/\D/g, '') },
             },
-            { upsert: true, new: true, setDefaultsOnInsert: true }
+            { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
         )
 
         logger.success(`Blacklisted - ${number}`)

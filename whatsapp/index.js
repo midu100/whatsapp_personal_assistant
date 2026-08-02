@@ -53,33 +53,44 @@ const startWhatsapp = async () => {
     // Server এ (Railway, VPS) terminal এর QR পড়া যায় না - log এ ASCII ভেঙে যায়।
     // তখন .env এ WA_PAIRING_NUMBER দিলে ৮ অক্ষরের একটা code পাওয়া যাবে,
     // সেটা WhatsApp → Linked Devices → "Link with phone number" এ টাইপ করলেই হবে।
-    if (!state.creds.registered && process.env.WA_PAIRING_NUMBER && !pairingRequested) {
+    //
+    // ⚠️ creds.registered দেখে এটা ঠিক করা যায় না - QR দিয়ে login করলে ওই flag
+    // false ই থাকে যদিও session পুরোপুরি valid। তাই Baileys যখন সত্যিই qr চায়
+    // (মানে link করা নেই) তখনই কেবল pairing code নেওয়া হয়।
+    const requestPairing = async () => {
+        if (pairingRequested) return
         pairingRequested = true
 
-        setTimeout(async () => {
-            try {
-                const number = String(process.env.WA_PAIRING_NUMBER).replace(/\D/g, '')
-                const code = await sock.requestPairingCode(number)
-                const pretty = code.match(/.{1,4}/g).join('-')
+        try {
+            const number = String(process.env.WA_PAIRING_NUMBER).replace(/\D/g, '')
+            const code = await sock.requestPairingCode(number)
+            const pretty = code.match(/.{1,4}/g).join('-')
 
-                console.log(`\n🔑 Pairing code: ${pretty}\n`)
-                console.log('   WhatsApp → Linked Devices → Link a Device → "Link with phone number instead"')
-                console.log('   → এই code টা টাইপ করো (৩ মিনিটের মধ্যে)\n')
+            console.log(`\n🔑 Pairing code: ${pretty}\n`)
+            console.log('   WhatsApp → Linked Devices → Link a Device → "Link with phone number instead"')
+            console.log('   → এই code টা টাইপ করো (৩ মিনিটের মধ্যে)\n')
 
-                await notify(`🔑 <b>WhatsApp pairing code</b>\n\n<code>${pretty}</code>\n\nWhatsApp → Linked Devices → Link with phone number instead → এই code টা দাও (৩ মিনিটের মধ্যে)`)
-            } catch (error) {
-                logger.error('Pairing code পাওয়া গেল না:', error?.message)
-            }
-        }, 4000)
+            await notify(
+                `🔑 <b>WhatsApp pairing code</b>\n\n<code>${pretty}</code>\n\nWhatsApp → Linked Devices → Link with phone number instead → এই code টা দাও (৩ মিনিটের মধ্যে)`
+            )
+        } catch (error) {
+            pairingRequested = false
+            logger.error('Pairing code পাওয়া গেল না:', error?.message)
+        }
     }
 
     // ====== Connection
     sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect, qr } = update
 
-        if (qr && !process.env.WA_PAIRING_NUMBER) {
-            console.log('\n📱 WhatsApp → Linked Devices → Link a Device → এই QR টা scan করো\n')
-            qrcode.generate(qr, { small: true })
+        // qr এলো মানে session নেই, link করতে হবে
+        if (qr) {
+            if (process.env.WA_PAIRING_NUMBER) {
+                await requestPairing()
+            } else {
+                console.log('\n📱 WhatsApp → Linked Devices → Link a Device → এই QR টা scan করো\n')
+                qrcode.generate(qr, { small: true })
+            }
         }
 
         if (connection === 'open') {

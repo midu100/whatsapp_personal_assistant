@@ -7,7 +7,6 @@ const dbConfig = require('../dbConfig')
 const knowledgeSchema = require('../models/knowledgeSchema')
 const { embedMany } = require('../services/embeddingServices')
 const { hashText, invalidateCache } = require('../services/knowledgeServices')
-const { rateCardText } = require('../services/pricingServices')
 const { availabilityText } = require('../services/schedulingServices')
 const logger = require('../utils/logger')
 
@@ -64,12 +63,9 @@ const seed = async () => {
         logger.info(`${file} → ${parsed.length} chunk`)
     }
 
-    // ====== Rate card আর availability code থেকেই আসে, যাতে কখনো mismatch না হয়
-    chunks.push({
-        topic: 'Pricing / Rate card',
-        text: `দামের তালিকা (rate card):\n${rateCardText()}`,
-        sourceFile: 'rateCard.js',
-    })
+    // ⚠️ Rate card ইচ্ছে করেই KB তে ঢোকানো হয় না।
+    // Assistant দাম বলে না - দাম owner নিজে বলেন। KB তে দাম থাকলে bot
+    // সেখান থেকে পড়ে বলে দিত, তাই দামের কোনো সংখ্যা KB তে রাখা হয় না।
 
     chunks.push({
         topic: 'Availability / Meeting',
@@ -79,16 +75,29 @@ const seed = async () => {
 
     logger.info(`মোট ${chunks.length} chunk`)
 
-    // ====== আগে থেকে আছে কিনা দেখো
+    chunks.forEach((chunk) => {
+        chunk.hash = hashText(chunk.text)
+    })
+
+    const allHashes = chunks.map((chunk) => chunk.hash)
+
+    // ====== পুরনো/বদলে যাওয়া লেখা মুছে ফেলো
+    // md ফাইল edit করলে পুরনো version টা DB তে থেকে যেত আর bot সেটাই পড়ত।
+    // শুধু seed এর গুলো মোছা হয় - তোমার শেখানো (learned) আর /kb দিয়ে যোগ করা
+    // (manual) knowledge কখনো মুছবে না।
+    const stale = await knowledgeSchema.deleteMany({ source: 'seed', hash: { $nin: allHashes } })
+    if (stale.deletedCount) logger.warn(`${stale.deletedCount} টা পুরনো chunk মুছে ফেলা হলো`)
+
+    // ====== যেগুলো নতুন
     const fresh = []
     for (const chunk of chunks) {
-        const hash = hashText(chunk.text)
-        const existing = await knowledgeSchema.findOne({ hash }).lean()
-        if (!existing) fresh.push({ ...chunk, hash })
+        const existing = await knowledgeSchema.findOne({ hash: chunk.hash }).lean()
+        if (!existing) fresh.push(chunk)
     }
 
     if (!fresh.length) {
         logger.success('সব chunk আগেই আছে, নতুন কিছু যোগ করার নেই ✅')
+        invalidateCache()
         await mongoose.connection.close()
         return
     }

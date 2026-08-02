@@ -135,12 +135,7 @@ const checkSeedFiles = () => {
     const fs = require('fs')
     const path = require('path')
 
-    const rateCard = fs.readFileSync(path.join(__dirname, 'rateCard.js'), 'utf8')
-    if (rateCard.includes('এই ফাইলটা তোমাকে অবশ্যই বদলাতে হবে')) {
-        warn('seed/rateCard.js এখনো placeholder — bot বানানো দাম বলবে')
-    } else {
-        ok('rateCard.js বদলানো হয়েছে')
-    }
+    ok('Assistant দাম বলে না — দাম owner নিজে বলেন, তাই rateCard এর সংখ্যা bot ব্যবহার করে না')
 
     const chats = fs.readFileSync(path.join(__dirname, 'sample_chats.md'), 'utf8')
     const sampleCount = (chats.match(/^##\s/gm) || []).length

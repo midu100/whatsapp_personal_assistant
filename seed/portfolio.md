@@ -15,5 +15,8 @@ Real-time messaging application। socket.io দিয়ে instant message del
 ## E-commerce with Next.js
 Next.js এর App Router দিয়ে বানানো e-commerce। Route group দিয়ে auth, admin আর shop এর অংশ আলাদা করা। SEO এর জন্য server-side rendering আর dynamic metadata। Middleware দিয়ে protected route handle করা হয়েছে। SEO গুরুত্বপূর্ণ হলে এই ধরনের setup ই recommend করি। GitHub: github.com/midu100/Ecommerce-Next.js-
 
+## WhatsApp AI Assistant
+নিজের জন্য বানানো একটা AI assistant, যেটা WhatsApp এ ক্লায়েন্টদের সাথে আমার হয়ে কথা বলে। বাংলা, English আর Banglash তিনটাই বোঝে ও সেই ভাষাতেই উত্তর দেয়। আমার portfolio বুঝিয়ে বলে, project এর requirement জেনে নেয়, কোন client কতটা serious সেটা হিসাব করে, meeting এর সময় ঠিক করে। যে প্রশ্নের উত্তর জানে না, সেটা আমার কাছে পাঠিয়ে দেয় — আর আমি উত্তর দিলে সেটা মনে রাখে, পরের বার নিজেই উত্তর দিতে পারে। Voice message ও বুঝতে পারে। Node.js, MongoDB আর Gemini দিয়ে বানানো। এই একই জিনিস যেকোনো ব্যবসার জন্য বানিয়ে দেওয়া যায়।
+
 ## কাজের নমুনা চাইলে
 এই project গুলোর GitHub link দেওয়া যায়, live demo ও দেখানো যায়। কেউ নির্দিষ্ট কোনো ধরনের কাজের নমুনা চাইলে সবচেয়ে কাছাকাছি project টা দেখানো হয়। ক্লায়েন্টের সাথে কল দিলে screen share করে বিস্তারিত দেখানো যায়।

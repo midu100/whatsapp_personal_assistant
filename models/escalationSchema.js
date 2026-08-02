@@ -12,7 +12,16 @@ const escalationSchema = new mongoose.Schema(
         reason: {
             type: String,
             default: 'unknown',
-            enum: ['unknown', 'low_confidence', 'pricing', 'complaint', 'wants_owner', 'legal', 'sensitive'],
+            enum: [
+                'unknown',
+                'low_confidence',
+                'personal',
+                'pricing',
+                'complaint',
+                'wants_owner',
+                'legal',
+                'sensitive',
+            ],
         },
         language: { type: String, default: 'bn' },
         status: { type: String, default: 'pending', enum: ['pending', 'answered', 'ignored'] },

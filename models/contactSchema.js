@@ -10,6 +10,7 @@ const contactSchema = new mongoose.Schema(
         botEnabled: { type: Boolean, default: true },
         pausedUntil: { type: Date, default: null },
         isKnown: { type: Boolean, default: false },
+        hasIntroduced: { type: Boolean, default: false },
         messageCount: { type: Number, default: 0 },
         lastMessageAt: { type: Date, default: null },
         tags: [{ type: String }],

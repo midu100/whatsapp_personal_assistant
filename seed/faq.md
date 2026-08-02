@@ -1,10 +1,22 @@
 # FAQ
 
 ## আপনি কী কী কাজ করেন?
-Website আর web application বানাই - landing page, business website, e-commerce, admin dashboard, custom web app। Frontend থেকে backend, database, API, admin panel, deployment পর্যন্ত পুরোটা একাই করি।
+Website, web application আর AI-powered application বানাই। Landing page আর business website থেকে শুরু করে e-commerce, SaaS platform, CRM, ERP, POS, restaurant management, booking platform — সব ধরনের business application নিয়ে কাজ করি। সাথে AI automation ও AI assistant বানাই। Frontend থেকে backend, database, API, admin panel, deployment পর্যন্ত পুরোটা একাই করি।
+
+## AI দিয়ে কিছু বানাতে পারবেন?
+হ্যাঁ, এটা এখন আমার কাজের বড় একটা অংশ। AI assistant বা chatbot বানাই যেটা WhatsApp, Messenger বা website এ আপনার হয়ে ক্লায়েন্টের সাথে কথা বলবে। আপনার নিজের ব্যবসার তথ্য দিয়ে AI কে শেখানো যায়, ফলে সে শুধু আপনার তথ্য থেকেই উত্তর দেয়, বানিয়ে কিছু বলে না। এছাড়া document থেকে তথ্য বের করা, report তৈরি, বারবার করা কাজ স্বয়ংক্রিয় করা — এসবও করি। Gemini, GPT আর Claude ব্যবহার করি। বাংলা ও ইংরেজি দুই ভাষাতেই কাজ করে।
+
+## আমি নিজের একটা AI model বানাতে চাই, পারবেন?
+শূন্য থেকে নিজের AI model train করা আমার কাজ নয়। তবে বেশিরভাগ ব্যবসার আসলে সেটা লাগেও না — Gemini বা GPT এর মতো তৈরি model কে আপনার নিজের তথ্য দিয়ে শিখিয়ে নিলেই কাজ হয়ে যায়, খরচ অনেক কম পড়ে আর অনেক দ্রুত হয়। সেই কাজটা আমি করে দিতে পারি।
+
+## আপনার বানানো application এ কি AI assistant থাকে?
+থাকতে পারে, আর আমি সেটাই পরামর্শ দিই। আমি যেসব business application বানাই তার প্রায় সবগুলোতেই একটা AI assistant বসানো যায় — যেটা ক্লায়েন্টের message এর উত্তর দেয়, নতুন lead গুছিয়ে রাখে, বিক্রির তথ্য দেখে সহজ ভাষায় বলে দেয়, stock কমে গেলে আগেই জানায়। এতে application টা শুধু তথ্য জমা রাখে না, কাজটাও করে দেয় — মালিকের সময় বাঁচে আর ব্যবসা চালানো সহজ হয়।
+
+## SaaS / CRM / ERP / POS বানাতে পারবেন?
+হ্যাঁ, এই ধরনের বড় business application নিয়েই মূলত কাজ করি। SaaS (subscription ভিত্তিক, multi-tenant), CRM (lead ও sales pipeline), ERP (inventory, accounts, HR), POS (billing, barcode, stock, multi-branch), restaurant management (menu, order, table booking, kitchen display), আর Airbnb ধরনের booking ও marketplace platform। প্রতিটাতেই চাইলে AI assistant যোগ করা যায়।
 
 ## কোন technology তে কাজ করেন?
-Frontend এ React আর Next.js, styling এ Tailwind CSS। Backend এ Node.js, Express আর MongoDB। এটাকেই MERN stack বলে। Real-time কিছু লাগলে socket.io।
+Frontend এ React আর Next.js, styling এ Tailwind CSS,Bootstrap,Jquery,GSAP,Fram। Backend এ Node.js, Express আর MongoDB। এটাকেই MERN stack বলে। Real-time কিছু লাগলে socket.io।
 
 ## WordPress দিয়ে করে দিতে পারবেন?
 না, WordPress এ কাজ করি না। আমি custom code এ website বানাই - এতে site অনেক দ্রুত হয়, যা খুশি customize করা যায়, আর plugin এর উপর নির্ভর করতে হয় না। তবে খুব সাধারণ blog টাইপ কিছু হলে WordPress ই সস্তা পড়বে, সেটা সরাসরি বলে দিই।
@@ -22,7 +34,10 @@ Native Android বা iOS app (Java, Kotlin, Swift) বানাই না। �
 কাজের আকারের উপর নির্ভর করে। ছোট landing page ৭-১২ দিন, business website ২-৩ সপ্তাহ, e-commerce ৪-৮ সপ্তাহ। Requirement বিস্তারিত জানার পর নির্দিষ্ট করে বলা যায়।
 
 ## দাম কত?
-Project এর ধরন আর কী কী feature লাগবে তার উপর নির্ভর করে। কী বানাতে চান সেটা জানালে একটা আনুমানিক range বলে দেওয়া যায়।
+দাম নির্ভর করে project এর ধরন আর কী কী feature লাগবে তার উপর। কাজটা ভালোভাবে না বুঝে দাম বলা হয় না — তাতে দুই পক্ষেরই সমস্যা হয়। তাই আগে requirement জেনে নেওয়া হয়, তারপর দাম জানানো হয়। Assistant কখনো দাম বলে না, দামটা সবসময় Kazi Mridul নিজে জানান।
+
+## Advance এর আগে estimate পাওয়া যাবে?
+হ্যাঁ। Requirement নিয়ে আলোচনা আর দাম জানানো — দুটোই সম্পূর্ণ free। কোনো টাকা দেওয়ার আগেই জানতে পারবেন কত পড়বে।
 
 ## Payment কীভাবে নেন?
 ৫০% advance, বাকি ৫০% delivery এর সময়। বড় project হলে milestone অনুযায়ী ভাগ করে নেওয়া যায়। দেশের ভিতরে bKash, Nagad বা bank transfer।

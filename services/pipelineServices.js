@@ -39,11 +39,15 @@ const runPipeline = async ({ contact, text }) => {
     const knowledge = formatForPrompt(results)
 
     // ====== 4. Prompt build
+    // প্রথমবার কথা হলে bot নিজের পরিচয় দিয়ে শুরু করবে
+    const isFirstContact = !contact.hasIntroduced
+
     const systemInstruction = buildSystemInstruction({
         contact,
         knowledge,
         summary: conversation.summary,
         language,
+        isFirstContact,
     })
 
     // ====== 5. History
@@ -121,6 +125,11 @@ const runPipeline = async ({ contact, text }) => {
     // ====== 9. Persist
     await memoryServices.appendMessage(conversation, 'assistant', clean)
     await memoryServices.summarizeIfNeeded(conversation)
+
+    if (isFirstContact) {
+        contact.hasIntroduced = true
+        await contact.save()
+    }
 
     const replies = chunkReply(clean, Number(process.env.MAX_MESSAGES_PER_TURN) || 3)
 

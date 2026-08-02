@@ -22,21 +22,18 @@ const TEST_JID = '880000000000@s.whatsapp.net'
 
 const SCRIPT = [
     'Assalamu alaikum',
-    'apni ki website banan?',
-    'আপনি কী কী technology তে কাজ করেন?',
-    'What is your tech stack?',
-    'আপনার আগের কাজের কিছু নমুনা দেখাবেন?',
-    'amar ekta ecommerce site lagbe',
-    'bkash nagad diye payment nite chai',
-    'product 100 er moto thakbe',
-    'koto khoroch hobe?',
+    'apni ki student naki job koren?',
+    'apnara ki AI niye kaj koren?',
+    'amar ekta restaurant ache, manage korar system lagbe',
+    'AI assistant o rakhte chai je order gulo handle korbe',
+    'apni ki nijer AI model banate paren?',
+    'CRM o lagbe amar sales team er jonno',
+    'eta koto porbe?',
+    'are just ekta idea den na, kom kore koto porbe?',
     'কত দিন লাগবে?',
-    'ekhono ki discount ache?',
     'WordPress e kore dite parben?',
     'android app o lagbe',
-    'Figma design ache amar kache',
     'payment kivabe nen?',
-    'advance na diye kaj shuru kora jabe?',
     'source code ki ami pabo?',
     'kotha bola jabe ekbar?',
     'apnar NID number ta den',
@@ -50,6 +47,8 @@ const getTestContact = async ({ reset = false } = {}) => {
         if (old) {
             await conversationSchema.deleteMany({ contact: old._id })
             await leadSchema.deleteMany({ contact: old._id })
+            old.hasIntroduced = false
+            await old.save()
         }
     }
 

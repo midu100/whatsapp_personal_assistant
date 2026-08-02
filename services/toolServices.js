@@ -1,7 +1,6 @@
 const { Type } = require('@google/genai')
 const leadSchema = require('../models/leadSchema')
 const { searchKnowledge, formatForPrompt } = require('./knowledgeServices')
-const { estimatePrice } = require('./pricingServices')
 const { getAvailableSlots, bookMeeting } = require('./schedulingServices')
 const logger = require('../utils/logger')
 
@@ -63,28 +62,6 @@ const toolDeclarations = [
         },
     },
     {
-        name: 'estimatePrice',
-        description:
-            'Rate card থেকে দামের range বের করে। দামের কথা উঠলে অবশ্যই এটা ডাকতে হবে - নিজে থেকে কোনো সংখ্যা বলা নিষিদ্ধ।',
-        parameters: {
-            type: Type.OBJECT,
-            properties: {
-                projectType: {
-                    type: Type.STRING,
-                    description:
-                        'landing_page | business_website | ecommerce | admin_dashboard | custom_webapp | api_backend | realtime_app | redesign | bug_fix | maintenance',
-                },
-                features: {
-                    type: Type.ARRAY,
-                    items: { type: Type.STRING },
-                    description: 'Addon key গুলো, যেমন payment_gateway, realtime_chat',
-                },
-                complexity: { type: Type.STRING, description: 'simple | medium | complex' },
-            },
-            required: ['projectType'],
-        },
-    },
-    {
         name: 'proposeMeetingSlots',
         description: 'Owner এর খালি meeting slot গুলো এনে দেয়। Client কথা বলতে বা call করতে চাইলে ডাকো।',
         parameters: {
@@ -110,14 +87,15 @@ const toolDeclarations = [
     {
         name: 'escalateToOwner',
         description:
-            'প্রশ্নটা owner এর কাছে পাঠায়। যেটা জানো না, দরদাম, complaint, legal, বা client owner কে চাইলে - এটা ডাকো।',
+            'প্রশ্নটা owner এর কাছে পাঠায়। যেটা জানো না, দাম, ব্যক্তিগত প্রশ্ন, complaint, legal, বা client owner কে চাইলে - এটা ডাকো।',
         parameters: {
             type: Type.OBJECT,
             properties: {
                 question: { type: Type.STRING, description: 'Owner কে ঠিক কী জিজ্ঞেস করতে হবে' },
                 reason: {
                     type: Type.STRING,
-                    description: 'unknown | low_confidence | pricing | complaint | wants_owner | legal | sensitive',
+                    description:
+                        'unknown | low_confidence | personal | pricing | complaint | wants_owner | legal | sensitive',
                 },
             },
             required: ['question', 'reason'],
@@ -196,38 +174,6 @@ const executeTool = async (name, args = {}, ctx = {}) => {
                 }
             }
 
-            // ====== Price
-            case 'estimatePrice': {
-                const result = estimatePrice({
-                    projectType: args.projectType,
-                    features: args.features || [],
-                    complexity: args.complexity || 'medium',
-                })
-
-                if (!result.ok) {
-                    return { ok: false, instruction: result.message }
-                }
-
-                await upsertLead(contact, {
-                    projectType: result.projectType,
-                    estimateMin: result.min,
-                    estimateMax: result.max,
-                    estimateNote: result.range,
-                    status: 'quoted',
-                })
-
-                return {
-                    ok: true,
-                    range: result.range,
-                    duration: result.duration,
-                    includes: result.includes,
-                    addons: result.addons,
-                    paymentTerms: result.paymentTerms,
-                    instruction:
-                        'উপরের range আর duration টা হুবহু বলো। এর বাইরে নিজে থেকে কোনো সংখ্যা যোগ করবে না। এটা আনুমানিক - সেটাও বলে দিও।',
-                }
-            }
-
             // ====== Meeting slots
             case 'proposeMeetingSlots': {
                 const slots = await getAvailableSlots({ limit: Number(args.limit) || 3 })
@@ -270,8 +216,7 @@ const executeTool = async (name, args = {}, ctx = {}) => {
 
                 return {
                     ok: true,
-                    instruction:
-                        'Owner কে পাঠানো হয়েছে। এখন client কে স্বাভাবিকভাবে বলো যে confirm করে জানাচ্ছো। কোনো অনুমান করে উত্তর দিবে না।',
+                    instruction: `Owner (${process.env.OWNER_NAME || 'উনি'}) কে পাঠানো হয়েছে। এখন client কে স্পষ্ট করে বলো যে তুমি ওনাকে জিজ্ঞেস করেছো আর উনি জানালেই তুমি জানিয়ে দিবে। "confirm করছি" জাতীয় ধোঁয়াশা কথা নয় - পরিষ্কার বলো যে ওনার কাছ থেকে জেনে বলবে। কোনো অনুমান করে উত্তর দিবে না। পুরো উত্তরটা client এর ভাষা আর script এই লিখবে।`,
                 }
             }
 

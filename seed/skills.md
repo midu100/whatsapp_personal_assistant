@@ -24,5 +24,31 @@ socket.io দিয়ে real-time chat, online status, live notification ব�
 ## আরও যা করি
 Email/OTP verification (nodemailer), password reset flow, pagination, search ও filter, admin dashboard with analytics, responsive design, hosting ও domain setup, existing site এর bug fix ও performance optimization।
 
+## AI automation ও AI-powered application
+শুধু সাধারণ website নয় — AI দিয়ে কাজ স্বয়ংক্রিয় করার application ও বানাই। এটা এখন আমার কাজের একটা বড় অংশ।
+
+যা যা বানাই: AI assistant বা chatbot যেটা WhatsApp, Messenger বা website এ বসে ক্লায়েন্টের হয়ে কথা বলে; নিজের ব্যবসার তথ্য দিয়ে শেখানো AI (RAG) যেটা শুধু আপনার তথ্য থেকেই উত্তর দেয়, বানিয়ে কিছু বলে না; document বা email থেকে তথ্য বের করে আনা; report আর content স্বয়ংক্রিয়ভাবে তৈরি; বারবার হাতে করা কাজগুলো AI দিয়ে চালিয়ে দেওয়া।
+
+Gemini, GPT আর Claude — এই AI model গুলো ব্যবহার করি। বাংলা আর ইংরেজি দুই ভাষাতেই AI কাজ করানো যায়, voice message বুঝিয়ে দেওয়াও সম্ভব।
+
+## Application এর ভিতরে AI assistant
+আমি যেসব business application বানাই, তার প্রায় সবগুলোতেই চাইলে একটা AI assistant বসিয়ে দেওয়া যায়। এটাই আসল পার্থক্য তৈরি করে — application টা শুধু তথ্য জমা রাখে না, কাজটাও করে দেয়।
+
+যেমন: ক্লায়েন্টের message এর উত্তর নিজে থেকে দেওয়া, নতুন lead এর তথ্য নিয়ে গুরুত্ব অনুযায়ী সাজানো, বিক্রির তথ্য দেখে সহজ ভাষায় report বলে দেওয়া, stock কমে গেলে আগেই জানিয়ে দেওয়া, invoice বা description লিখে দেওয়া, "এই মাসে সবচেয়ে বেশি কোনটা বিক্রি হয়েছে" এমন প্রশ্নের উত্তর সরাসরি দেওয়া।
+
+এতে মালিকের সময় বাঁচে আর ব্যবসা চালানো সহজ হয় — এটাই লক্ষ্য।
+
+## Business application (SaaS, CRM, ERP, POS)
+বড় ধরনের business application নিয়েও কাজ করি:
+
+**SaaS platform** — subscription ভিত্তিক software, multi-tenant, plan অনুযায়ী feature নিয়ন্ত্রণ, billing।
+**CRM** — lead আর customer management, sales pipeline, follow-up reminder, report।
+**ERP** — inventory, purchase, sales, accounts, HR ও payroll, multi-branch।
+**POS** — billing, barcode, stock, দৈনিক ও মাসিক sales report, একাধিক শাখা।
+**Restaurant management** — menu ও order, table booking, kitchen display, online delivery, billing।
+**Booking ও marketplace platform** — Airbnb ধরনের, listing, search ও filter, calendar, payment ও commission, review।
+
+এই প্রতিটাতেই AI assistant যোগ করা যায়।
+
 ## যেসব কাজ আমি করি না
-Native Android বা iOS app (Java, Kotlin, Swift) বানাই না। Machine Learning বা AI model training করি না। Blockchain বা smart contract এর কাজ করি না। Game development করি না। Desktop software (C#, .NET) বানাই না। WordPress theme development করি না - কেউ WordPress চাইলে সরাসরি বলে দিই এটা আমার কাজের বাইরে।
+Native Android বা iOS app (Java, Kotlin, Swift) বানাই না। শূন্য থেকে নিজের AI/ML model train করি না — তবে Gemini, GPT বা Claude এর মতো তৈরি model দিয়ে AI application বানানো আমার নিয়মিত কাজ, সেটা অবশ্যই করি। Blockchain বা smart contract এর কাজ করি না। Game development করি না। Desktop software (C#, .NET) বানাই না। WordPress theme development করি না - কেউ WordPress চাইলে সরাসরি বলে দিই এটা আমার কাজের বাইরে।

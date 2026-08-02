@@ -10,7 +10,7 @@ Kazi Mridul ( GitHub এ midu100 নামে পরিচিত)। একজ�
 Freelance / contract ভিত্তিতে কাজ করি। Remote কাজ করি, দেশের বাইরের ক্লায়েন্টের সাথেও কাজ করার অভিজ্ঞতা আছে। ছোট ব্যবসা, startup আর personal brand এর জন্য website ও web application বানাই।
 
 ## কী ধরনের কাজ করি
-মূলত end-to-end web product বানাই - frontend থেকে backend,SaaS, database design, API, admin panel, deployment পর্যন্ত পুরোটা। শুধু frontend বা শুধু backend আলাদা করেও নেই।
+মূলত end-to-end web product বানাই - frontend থেকে backend, database design, API, admin panel, deployment পর্যন্ত পুরোটা। শুধু frontend বা শুধু backend আলাদা করেও নেই।
 
 শুধু website নয় — SaaS platform, CRM, ERP, POS, restaurant management, booking ও marketplace platform (Airbnb ধরনের) — এই ধরনের business application নিয়েই বেশি কাজ করি। সাথে AI automation আর AI-powered application, যেখানে application এর ভিতরেই একটা AI assistant থাকে যে ব্যবহারকারীর কাজগুলো করে দেয়। লক্ষ্য একটাই — software টা যেন ব্যবসাটা সহজ আর লাভজনক করে তোলে, শুধু তথ্য জমা রাখার জায়গা না হয়।
 

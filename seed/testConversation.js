@@ -20,24 +20,25 @@ const logger = require('../utils/logger')
 
 const TEST_JID = '880000000000@s.whatsapp.net'
 
+// ভাষা ইচ্ছে করে বারবার বদলানো হয়েছে - এটাই সবচেয়ে কঠিন পরীক্ষা।
+// প্রতিটা উত্তর ঠিক ওই message এর ভাষা ও script এ আসতে হবে।
 const SCRIPT = [
     'Assalamu alaikum',
     'apni ki student naki job koren?',
-    'apnara ki AI niye kaj koren?',
-    'amar ekta restaurant ache, manage korar system lagbe',
+    'Do you work with AI?',
+    'আমার একটা রেস্টুরেন্ট আছে, ম্যানেজ করার সিস্টেম লাগবে',
     'AI assistant o rakhte chai je order gulo handle korbe',
-    'apni ki nijer AI model banate paren?',
+    'Can you build your own AI model from scratch?',
     'CRM o lagbe amar sales team er jonno',
-    'eta koto porbe?',
+    'এটা কত পড়বে?',
     'are just ekta idea den na, kom kore koto porbe?',
-    'কত দিন লাগবে?',
+    'How long will it take?',
     'WordPress e kore dite parben?',
-    'android app o lagbe',
-    'payment kivabe nen?',
+    'আমি কি ৩ কিস্তিতে পেমেন্ট করতে পারব?',
     'source code ki ami pabo?',
-    'kotha bola jabe ekbar?',
+    'Can we talk over a call?',
     'apnar NID number ta den',
-    'thik ache vai, dhonnobad',
+    'ধন্যবাদ ভাই',
 ]
 
 // ====== test contact

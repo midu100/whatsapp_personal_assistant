@@ -4,7 +4,7 @@ const { buildSystemInstruction, holdingMessage } = require('./promptServices')
 const { toolDeclarations, executeTool } = require('./toolServices')
 const { createEscalation } = require('./escalationServices')
 const memoryServices = require('./memoryServices')
-const { detectLanguage } = require('../utils/languageDetect')
+const { detectLanguage, languageLabel, isScriptCorrect } = require('../utils/languageDetect')
 const { chunkReply, toWhatsappFormat } = require('../utils/chunker')
 const logger = require('../utils/logger')
 
@@ -18,6 +18,44 @@ const textOf = (response) =>
         .map((part) => part.text)
         .join('')
         .trim()
+
+// ====== ভাষা মিলিয়ে দেখা
+// Prompt এ নিয়ম লেখা থাকলেও LLM মাঝে মাঝে আগের কথার ভাষায় টেনে নিয়ে যায়
+// (বাংলায় প্রশ্ন করলে Banglish এ উত্তর দিয়ে দেয়)। তাই শুধু অনুরোধ না করে
+// উত্তরটা যাচাই করা হয় - ভুল script হলে একবার আবার লিখতে বলা হয়।
+const enforceScript = async ({ text, language, systemInstruction, contents }) => {
+    if (!text || isScriptCorrect(text, language)) return text
+
+    logger.warn(`ভুল script এ উত্তর (${language} হওয়ার কথা) - আবার লেখানো হচ্ছে`)
+
+    const rule =
+        language === 'bn'
+            ? 'পুরো উত্তরটা বাংলা অক্ষরে (বাংলা script এ) লিখতে হবে। শুধু technical term ইংরেজিতে থাকতে পারে।'
+            : language === 'banglish'
+              ? 'পুরো উত্তরটা English অক্ষরে লিখতে হবে (Banglish) - একটাও বাংলা অক্ষর ব্যবহার করা যাবে না।'
+              : 'The entire reply must be in English. Do not use any Bangla characters.'
+
+    contents.push({
+        role: 'user',
+        parts: [
+            {
+                text: `[SYSTEM CORRECTION] তোমার শেষ উত্তরটা ভুল script এ লেখা হয়েছে। Client লিখেছে ${languageLabel(language)} এ।\n${rule}\n\nএকই কথা, একই অর্থ - শুধু ঠিক script এ আবার লেখো। অন্য কিছু যোগ করবে না, কোনো ব্যাখ্যা দিবে না।`,
+            },
+        ],
+    })
+
+    try {
+        const retry = await chat({ systemInstruction, contents, temperature: 0.3 })
+        const fixed = textOf(retry)
+
+        // দ্বিতীয়বারেও ঠিক না হলে যা ছিল তাই থাক
+        if (fixed && isScriptCorrect(fixed, language)) return fixed
+        return fixed || text
+    } catch (error) {
+        logger.error('enforceScript failed:', error?.message)
+        return text
+    }
+}
 
 // ====== মূল orchestration
 // WhatsApp আর testConversation.js দুটোই এই একই ফাংশন ডাকে
@@ -119,6 +157,9 @@ const runPipeline = async ({ contact, text }) => {
 
         finalText = holdingMessage(language)
     }
+
+    // ====== ভাষা ঠিক আছে কিনা যাচাই করে দরকার হলে আবার লেখাও
+    finalText = await enforceScript({ text: finalText, language, systemInstruction, contents })
 
     const clean = toWhatsappFormat(finalText)
 

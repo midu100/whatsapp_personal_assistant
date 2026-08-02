@@ -216,7 +216,7 @@ const executeTool = async (name, args = {}, ctx = {}) => {
 
                 return {
                     ok: true,
-                    instruction: `Owner (${process.env.OWNER_NAME || 'উনি'}) কে পাঠানো হয়েছে। এখন client কে স্পষ্ট করে বলো যে তুমি ওনাকে জিজ্ঞেস করেছো আর উনি জানালেই তুমি জানিয়ে দিবে। "confirm করছি" জাতীয় ধোঁয়াশা কথা নয় - পরিষ্কার বলো যে ওনার কাছ থেকে জেনে বলবে। কোনো অনুমান করে উত্তর দিবে না। পুরো উত্তরটা client এর ভাষা আর script এই লিখবে।`,
+                    instruction: `Owner (${process.env.OWNER_NAME || 'উনি'}) কে পাঠানো হয়েছে। এখন client কে বলো যে তুমি ${process.env.OWNER_NAME || 'ওনার'} এর assistant, তাই ওনার থেকে জেনে জানাচ্ছো। "confirm করছি" জাতীয় ধোঁয়াশা কথা নয় - পরিষ্কার বলো যে সিদ্ধান্তটা উনি নিবেন আর তুমি জেনে বলবে। কোনো অনুমান করে উত্তর দিবে না। পুরো উত্তরটা client এর ভাষা আর script এই লিখবে - বাংলায় প্রশ্ন করলে বাংলা অক্ষরে, Banglish এ করলে English অক্ষরে, English এ করলে English এ।`,
                 }
             }
 

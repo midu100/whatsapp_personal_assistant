@@ -186,4 +186,25 @@ const languageLabel = (lang) => {
     return map[lang] || map.en
 }
 
-module.exports = { detectLanguage, languageLabel }
+// ====== লেখাটা কোন script এ - বাংলা অক্ষর বনাম ইংরেজি অক্ষরের অনুপাত
+// (সংখ্যা, emoji, যতিচিহ্ন হিসাবের বাইরে)
+const banglaRatio = (text = '') => {
+    const bangla = (String(text).match(/[ঀ-৿]/g) || []).length
+    const latin = (String(text).match(/[A-Za-z]/g) || []).length
+    const total = bangla + latin
+    if (!total) return null
+    return bangla / total
+}
+
+// ====== উত্তরটা ঠিক script এ লেখা হয়েছে কিনা
+// bn হলে বাংলা অক্ষরেই লিখতে হবে (technical term ইংরেজিতে থাকা স্বাভাবিক)
+// banglish / en হলে একটাও বাংলা অক্ষর থাকা চলবে না
+const isScriptCorrect = (text, language) => {
+    const ratio = banglaRatio(text)
+    if (ratio === null) return true
+
+    if (language === 'bn') return ratio >= 0.5
+    return ratio <= 0.1
+}
+
+module.exports = { detectLanguage, languageLabel, banglaRatio, isScriptCorrect }

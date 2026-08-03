@@ -19,6 +19,15 @@ const textOf = (response) =>
         .join('')
         .trim()
 
+// ====== "owner কে জিজ্ঞেস করে জানাচ্ছি" বলেছে কিনা
+// Bot মাঝে মাঝে client কে কথা দিয়ে দেয় কিন্তু escalateToOwner tool টা ডাকতে ভুলে যায়।
+// তখন client অপেক্ষা করতে থাকে আর owner কিছুই জানে না - সবচেয়ে খারাপ অবস্থা।
+// তাই উত্তরে প্রতিশ্রুতি থাকলে অথচ escalation না হলে নিজে থেকেই তৈরি করে দেওয়া হয়।
+const OWNER_REF = /mridul|onar|onake|uni\b|ওনার|ওনাকে|উনি|তাকে|তার কাছ|with him|ask him|his call/i
+const CONSULT = /jene|jiggesh|jigges|shiddhanto|siddhanto|decision|জেনে|জিজ্ঞেস|সিদ্ধান্ত|জানিয়ে দিচ্ছি|জানাচ্ছি|janacchi|janiye dicchi|check with|confirm with|get back to you/i
+
+const promisedToAsk = (text = '') => OWNER_REF.test(text) && CONSULT.test(text)
+
 // ====== ভাষা মিলিয়ে দেখা
 // Prompt এ নিয়ম লেখা থাকলেও LLM মাঝে মাঝে আগের কথার ভাষায় টেনে নিয়ে যায়
 // (বাংলায় প্রশ্ন করলে Banglish এ উত্তর দিয়ে দেয়)। তাই শুধু অনুরোধ না করে
@@ -156,6 +165,21 @@ const runPipeline = async ({ contact, text }) => {
         }
 
         finalText = holdingMessage(language)
+    }
+
+    // ====== কথা দিয়েছে অথচ পাঠায়নি? তাহলে নিজেই পাঠিয়ে দাও
+    if (!escalated && promisedToAsk(finalText)) {
+        logger.warn('Bot জিজ্ঞেস করার কথা দিয়েছে কিন্তু escalate করেনি - নিজে থেকে পাঠানো হচ্ছে')
+
+        await createEscalation({
+            contact,
+            conversation,
+            question: text,
+            reason: 'unknown',
+            language,
+        })
+
+        escalated = true
     }
 
     // ====== ভাষা ঠিক আছে কিনা যাচাই করে দরকার হলে আবার লেখাও

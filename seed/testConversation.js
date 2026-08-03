@@ -23,8 +23,12 @@ const TEST_JID = '880000000000@s.whatsapp.net'
 // ভাষা ইচ্ছে করে বারবার বদলানো হয়েছে - এটাই সবচেয়ে কঠিন পরীক্ষা।
 // প্রতিটা উত্তর ঠিক ওই message এর ভাষা ও script এ আসতে হবে।
 const SCRIPT = [
+    'Hi',
     'Assalamu alaikum',
     'apni ki student naki job koren?',
+    'payment kivabe nen? advance koto lagbe?',
+    'kisti te dewa jabe?',
+    'amar site e bkash nagad diye payment nite chai, seta korte parben?',
     'Do you work with AI?',
     'আমার একটা রেস্টুরেন্ট আছে, ম্যানেজ করার সিস্টেম লাগবে',
     'AI assistant o rakhte chai je order gulo handle korbe',

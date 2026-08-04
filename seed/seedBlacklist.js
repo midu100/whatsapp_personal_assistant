@@ -17,7 +17,7 @@ const logger = require('../utils/logger')
 const BLACKLIST = [
     '8801716150685',  // আম্মু
     '8801325075442',  // আব্বু
-    // '8801XXXXXXXXX',  // ছোট ভাই
+    '8801814636872',  // ছোট ভাই
     // '8801XXXXXXXXX',  // বেস্ট ফ্রেন্ড
 ]
 

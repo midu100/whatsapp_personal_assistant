@@ -103,6 +103,14 @@ const toolDeclarations = [
     },
 ]
 
+// ====== Mode অনুযায়ী কোন tool গুলো দেওয়া হবে
+// greeting mode এ শুধু escalateToOwner - বাকি tool এর code থেকেই যায়,
+// AGENT_MODE=full করলেই আবার সব ফিরে আসে।
+const toolsForMode = () => {
+    if (process.env.AGENT_MODE === 'full') return toolDeclarations
+    return toolDeclarations.filter((tool) => tool.name === 'escalateToOwner')
+}
+
 // ====== Lead upsert helper
 const upsertLead = async (contact, patch = {}) => {
     const clean = Object.fromEntries(
@@ -229,4 +237,4 @@ const executeTool = async (name, args = {}, ctx = {}) => {
     }
 }
 
-module.exports = { toolDeclarations, executeTool, upsertLead }
+module.exports = { toolDeclarations, toolsForMode, executeTool, upsertLead }

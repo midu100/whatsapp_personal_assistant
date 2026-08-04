@@ -1,7 +1,7 @@
 const { chat } = require('./geminiServices')
 const { searchKnowledge, formatForPrompt } = require('./knowledgeServices')
-const { buildSystemInstruction, holdingMessage } = require('./promptServices')
-const { toolDeclarations, executeTool } = require('./toolServices')
+const { buildSystemInstruction, holdingMessage, agentMode } = require('./promptServices')
+const { toolsForMode, executeTool } = require('./toolServices')
 const { createEscalation } = require('./escalationServices')
 const memoryServices = require('./memoryServices')
 const { detectLanguage, languageLabel, isScriptCorrect } = require('../utils/languageDetect')
@@ -82,8 +82,11 @@ const runPipeline = async ({ contact, text }) => {
     }
 
     // ====== 3. Knowledge retrieve
-    const results = await searchKnowledge(text, 5)
-    const knowledge = formatForPrompt(results)
+    // greeting mode এ bot কিছু বলেই না, তাই KB আনার দরকার নেই -
+    // এতে একটা API call বাঁচে আর ভুল করে তথ্য ফাঁস হওয়ার সুযোগও থাকে না
+    const greetingOnly = agentMode() === 'greeting'
+    const results = greetingOnly ? [] : await searchKnowledge(text, 5)
+    const knowledge = greetingOnly ? '' : formatForPrompt(results)
 
     // ====== 4. Prompt build
     // প্রথমবার কথা হলে bot নিজের পরিচয় দিয়ে শুরু করবে
@@ -108,7 +111,7 @@ const runPipeline = async ({ contact, text }) => {
         const response = await chat({
             systemInstruction,
             contents,
-            tools: toolDeclarations,
+            tools: toolsForMode(),
             temperature: 0.7,
         })
 
@@ -168,7 +171,12 @@ const runPipeline = async ({ contact, text }) => {
     }
 
     // ====== কথা দিয়েছে অথচ পাঠায়নি? তাহলে নিজেই পাঠিয়ে দাও
-    if (!escalated && promisedToAsk(finalText)) {
+    //
+    // শুধু full mode এ। greeting mode এ bot প্রতিটা উত্তরেই "উনি জানাবেন" বলে,
+    // তাই এখানে চালালে নিছক "Hi" এর জন্যও ticket তৈরি হতো আর chat pause হয়ে
+    // যেত - পরের আসল প্রশ্নটা তখন কেউ পেত না। ওখানে LLM এর হাতে একটাই tool
+    // আর নির্দেশ স্পষ্ট, তাই এই জালের দরকারও নেই।
+    if (!greetingOnly && !escalated && promisedToAsk(finalText)) {
         logger.warn('Bot জিজ্ঞেস করার কথা দিয়েছে কিন্তু escalate করেনি - নিজে থেকে পাঠানো হচ্ছে')
 
         await createEscalation({
@@ -194,6 +202,16 @@ const runPipeline = async ({ contact, text }) => {
     if (isFirstContact) {
         contact.hasIntroduced = true
         await contact.save()
+    }
+
+    // ====== greeting mode: owner কে ডেকে দেওয়ার পর bot চুপ
+    // "একজন message দিলো আর reply করলো" - এই অবিরাম কথা বলা বন্ধ করার জন্য।
+    // এখন থেকে ওই chat টা owner এর, bot আর ঢুকবে না।
+    if (greetingOnly && escalated) {
+        const hours = Number(process.env.GREETING_PAUSE_HOURS) || 12
+        contact.pausedUntil = new Date(Date.now() + hours * 60 * 60 * 1000)
+        await contact.save()
+        logger.info(`greeting mode - ${contact.name || contact.jid} এর chat এ bot ${hours} ঘন্টা চুপ`)
     }
 
     const replies = chunkReply(clean, Number(process.env.MAX_MESSAGES_PER_TURN) || 3)

@@ -9,6 +9,9 @@ Kazi Mridul ( GitHub এ midu100 নামে পরিচিত)। একজ�
 ## কাজের ধরন
 Freelance / contract ভিত্তিতে কাজ করি। Remote কাজ করি, দেশের বাইরের ক্লায়েন্টের সাথেও কাজ করার অভিজ্ঞতা আছে। ছোট ব্যবসা, startup আর personal brand এর জন্য website ও web application বানাই।
 
+## Full-time job
+Freelance এর পাশাপাশি full-time job এর জন্যও উন্মুক্ত। কোনো কোম্পানি বা team এ full-time developer হিসেবে যোগ দিতে আগ্রহী — remote, hybrid বা on-site, তিনটাই বিবেচনা করি। কেউ চাকরির প্রস্তাব বা নিয়োগ সংক্রান্ত কিছু নিয়ে যোগাযোগ করলে সেটা Kazi Mridul এর কাছে পাঠাতে হবে, উনি নিজে কথা বলবেন। বেতন, যোগদানের সময় বা শর্ত নিয়ে assistant কোনো কথা বলবে না।
+
 ## কী ধরনের কাজ করি
 মূলত end-to-end web product বানাই - frontend থেকে backend, database design, API, admin panel, deployment পর্যন্ত পুরোটা। শুধু frontend বা শুধু backend আলাদা করেও নেই।
 

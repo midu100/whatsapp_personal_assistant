@@ -1,201 +1,330 @@
 # WhatsApp Personal AI Assistant
 
-তোমার হয়ে WhatsApp এ client দের সাথে কথা বলে — portfolio বোঝায়, requirement নেয়, client qualify করে, price estimate দেয়, meeting ঠিক করে। যা জানে না সেটা তোমার কাছে পাঠায়, আর **তোমার উত্তর থেকে শিখে রাখে**।
+An AI assistant that answers WhatsApp on your behalf when you're not available.
 
-Node 22 · Express 5 · Mongoose 9 · Baileys · Gemini · Telegraf
+It greets people, introduces itself honestly as an AI assistant, and forwards anything real to you on Telegram — so you never lose a lead just because you were offline. When you reply, it remembers your answer for next time.
+
+Speaks **Bangla, English and Banglish**, and always replies in the same language and script the person wrote in.
+
+**Node 22 · Express 5 · Mongoose 9 · Baileys · Google Gemini · Telegraf**
 
 ---
 
-## ১. Setup
+## Two modes
 
-```bash
-npm install               # হয়ে গেছে
-# .env ফাইল বানানো আছে — শুধু উপরের ৫টা ফাঁকা জায়গা ভরো
-npm run check             # সব ঠিক আছে কিনা যাচাই করে বলে দিবে
+The assistant ships in a deliberately quiet mode. Switch with one line in `.env`.
+
+### `AGENT_MODE=greeting` — default
+
+Handles the opening, then steps aside.
+
+```
+Someone:  Hi
+Assistant: Hello! I'm Kazi Mridul's AI assistant. He's a bit busy right now
+           — he'll get back to you personally very soon.
+
+Someone:  kemon achen?
+Assistant: Alhamdulillah, ami bhalo achi. Kazi Mridul ekhon byasto achen,
+           uni nijei dekhe apnake janaben.
+
+Someone:  apni ki website banan?
+Assistant: Eita Kazi Mridul nijei bhalo bolte parben.
+           Ami onake janiye diyechi, uni apnake janaben.
+           → 🔔 Telegram notification to you
+           → assistant goes quiet in that chat for 12 hours
 ```
 
-`.env` এ যা লাগবে:
+It answers greetings and pleasantries. The moment anything real comes up — work,
+pricing, a job offer, anything — it escalates to you and stops talking. It never
+pitches, never asks qualifying questions, and never pretends to know something.
 
-| Key | কোথায় পাবে |
-|---|---|
-| `GEMINI_API_KEY` | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) — free, card লাগে না |
-| `DB_STRING` | [cloud.mongodb.com](https://cloud.mongodb.com) M0 cluster (Network Access এ `0.0.0.0/0`) |
-| `TELEGRAM_BOT_TOKEN` | Telegram এ [@BotFather](https://t.me/BotFather) → `/newbot` |
-| `TELEGRAM_CHAT_ID` | [@userinfobot](https://t.me/userinfobot) কে `/start` |
-| `OWNER_NUMBER` | তোমার WA নম্বর, country code সহ — `8801XXXXXXXXX` |
-| `JWT_SECRET` | যেকোনো random string (শুধু admin dashboard এর জন্য) |
+No knowledge base is even loaded in this mode. The assistant simply doesn't have
+the information, so it can't leak it.
 
-## ২. নিজের তথ্য বসাও
+### `AGENT_MODE=full` — the complete sales assistant
 
-`seed/` ফোল্ডারের ফাইলগুলো আমি ভরে রেখেছি, কিন্তু **দুটো তোমাকে অবশ্যই বদলাতে হবে**:
+Everything above, plus: explains your portfolio, collects project requirements
+through natural conversation, scores how serious a lead is, offers meeting slots
+and books them.
 
-| ফাইল | কেন |
-|---|---|
-| 🔴 `seed/rateCard.js` | সব দাম placeholder। Bot **শুধু এখান থেকেই** দাম বলে — ভুল থাকলে ভুল দাম বলবে |
-| 🔴 `seed/sample_chats.md` | তোমার আসল client conversation বসাও। এটাই ঠিক করে bot "তোমার মতো" শোনাবে নাকি generic ChatGPT এর মতো |
+Nothing was deleted to build greeting mode — `toolsForMode()` just filters the
+tool list. All six tools are still in the codebase.
 
-বাকিগুলো (`profile.md`, `skills.md`, `portfolio.md`, `faq.md`, `policy.md`, `availability.md`) দরকারমতো ঠিক করে নিও।
+---
 
-Meeting এর আসল সময় `services/schedulingServices.js` এর `AVAILABILITY` array এ।
+## Setup
 
 ```bash
-npm run seed          # seed/*.md → embed → MongoDB (বারবার চালানো যায়)
+npm install
+cp .env.example .env      # fill in the 5 required values
+npm run check             # verifies every key and connection, tells you what's broken
 ```
 
-## ৩. ⚠️ Blacklist (bot চালু করার আগে)
+### Required environment variables
 
-Bot তোমার personal নম্বরে চলবে — মানে বন্ধু আর পরিবারের chat এও ঢুকবে।
+| Key | Where to get it |
+|---|---|
+| `GEMINI_API_KEY` | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) — free, no card required |
+| `DB_STRING` | [cloud.mongodb.com](https://cloud.mongodb.com) free M0 cluster (allow `0.0.0.0/0` in Network Access) |
+| `TELEGRAM_BOT_TOKEN` | [@BotFather](https://t.me/BotFather) on Telegram → `/newbot` |
+| `TELEGRAM_CHAT_ID` | send `/start` to [@userinfobot](https://t.me/userinfobot) |
+| `OWNER_NUMBER` | your WhatsApp number with country code — `8801XXXXXXXXX` |
 
-`seed/seedBlacklist.js` খুলে চেনা নম্বরগুলো বসাও, তারপর:
+Send `/start` to your own bot on Telegram once, or it can't message you.
+
+### Behaviour settings
+
+| Key | Default | What it does |
+|---|---|---|
+| `AGENT_MODE` | `greeting` | `greeting` or `full` |
+| `GREETING_PAUSE_HOURS` | `12` | how long the assistant stays quiet after handing a chat to you |
+| `DEBOUNCE_MS` | `8000` | wait window before replying, so several quick messages become one answer |
+| `MAX_MESSAGES_PER_TURN` | `3` | cap on how many messages one reply is split into |
+| `HOURLY_MESSAGE_LIMIT` | `20` | per-contact rate limit |
+| `GEMINI_MODEL` | `gemini-3.5-flash-lite` | `gemini-3.5-flash` is better but free tier allows only 5 req/min |
+| `GEMINI_MIN_GAP_MS` | `1200` | minimum gap between Gemini calls, keeps you inside free-tier limits |
+| `WA_PAIRING_NUMBER` | empty | only for headless re-linking — see Deploy |
+
+---
+
+## Your own content
+
+`seed/` holds everything the assistant knows. Only used in `full` mode.
+
+| File | What goes in it |
+|---|---|
+| `profile.md` | who you are, where you work, availability for full-time roles |
+| `skills.md` | your stack, what you build, and explicitly what you don't |
+| `portfolio.md` | past projects with links |
+| `faq.md` | the questions clients actually keep asking |
+| `policy.md` | revisions, timelines, ownership, NDA |
+| `availability.md` | when you take meetings |
+| `sample_chats.md` | **real past conversations** — this is what makes the assistant sound like you rather than like a generic chatbot |
+| `rateCard.js` | project types and add-ons. Prices are never spoken by the assistant, but the type list drives lead classification |
+
+```bash
+npm run seed          # seed/*.md → embeddings → MongoDB, safe to re-run
+```
+
+Re-running removes chunks you deleted or edited. Knowledge the assistant learned
+from your replies, and anything added via `/kb`, is never touched.
+
+Meeting hours live in `AVAILABILITY` inside `services/schedulingServices.js`.
+
+---
+
+## Before you go live: blacklist
+
+This runs on your personal number, so it sees messages from friends and family too.
+
+Open `seed/seedBlacklist.js`, add the numbers that should never get an automated
+reply, then:
 
 ```bash
 npm run seed:blacklist
 ```
 
-পরে যেকোনো chat এ WhatsApp থেকেই `/bl` লিখলেও blacklist হয়ে যাবে।
-
-## ৪. WhatsApp ছাড়াই test করো
-
-```bash
-npm run test:chat              # নিজে টাইপ করে কথা বলো
-npm run test:chat -- --script  # ২০টা বাঁধা প্রশ্ন একসাথে
-```
-
-Prompt tune করার সবচেয়ে ভালো উপায় এটাই — WhatsApp এ বারবার message পাঠালে ban এর ঝুঁকি বাড়ে।
-
-## ৫. চালু করো
-
-```bash
-npm run dev     # local এ (file বদলালে auto restart)
-npm start       # production / server এ
-```
-
-Terminal এ QR আসবে → WhatsApp → **Linked Devices** → **Link a Device** → scan।
-
-একবার scan করলেই session MongoDB তে চলে যায় — এরপর restart বা deploy করলে আর scan করতে হবে না।
+You can also type `/bl` in any chat from your own phone to blacklist it instantly.
 
 ---
 
-## Command
+## Test without WhatsApp
 
-### WhatsApp এ (যেকোনো chat এ, শুধু তুমিই লিখতে পারবে)
+```bash
+npm run test:chat              # interactive, type and see replies
+npm run test:chat -- --script  # runs a scripted conversation that switches
+                               # language repeatedly and probes every guardrail
+```
 
-| Command | কাজ |
+This is the right way to tune prompts. Hammering your real WhatsApp increases ban risk.
+
+---
+
+## Run it
+
+```bash
+npm run dev     # local, restarts on file change
+npm start       # production
+```
+
+A QR code appears in the terminal → WhatsApp → **Linked Devices** → **Link a Device** → scan.
+
+The session is stored in MongoDB, not on disk, so you only ever scan once —
+restarts and redeploys reuse it.
+
+---
+
+## Commands
+
+### From your own phone, in any WhatsApp chat
+
+| Command | Effect |
 |---|---|
-| `/off` · `/on` | এই chat এ bot বন্ধ / চালু |
-| `/pause 2h` | এই chat এ ২ ঘন্টা চুপ (`m` `h` `d`) |
-| `/bl` · `/unbl` | Blacklist করা / বের করা |
-| `/status` | এই chat এর অবস্থা + lead info |
-| `/note <text>` | Contact এ নোট |
-| `/kb <text>` | Knowledge base এ যোগ |
-| `/botoff` · `/boton` | সব chat এ bot বন্ধ / চালু |
-| `/stats` · `/pending` | হিসাব / pending প্রশ্ন |
+| `/off` · `/on` | disable / enable the assistant in this chat |
+| `/pause 2h` | stay quiet here for a while (`m` `h` `d`) |
+| `/bl` · `/unbl` | blacklist / un-blacklist this contact |
+| `/status` | state of this chat, plus lead info |
+| `/note <text>` | attach a note to the contact |
+| `/kb <text>` | teach the knowledge base something |
+| `/botoff` · `/boton` | global kill switch |
+| `/stats` · `/pending` | summary / unanswered questions |
 
-### Telegram এ
+### On Telegram
 
-`/pending` · `/ans <ticket> <উত্তর>` · `/leads` · `/meetings` · `/stats` · `/kb <text>` · `/say <number> <text>` · `/botoff` · `/boton`
+`/pending` · `/ans <ticket> <answer>` · `/leads` · `/meetings` · `/stats` ·
+`/kb <text>` · `/say <number> <text>` · `/botoff` · `/boton`
 
-Escalation notification এ **সরাসরি reply দিলেও** উত্তর চলে যাবে — `/ans` লেখা লাগবে না।
+You can also just **reply directly** to any escalation notification — no `/ans` needed.
 
 ---
 
-## কীভাবে কাজ করে
+## How it works
 
 ```
-Client message
-   ↓ whatsapp/listener → messageRouter        blacklist? group? command? paused?
-   ↓ debouncer (৮ সেকেন্ড)                    ৪টা message একসাথে merge
+incoming message
+   ↓ whatsapp/listener → messageRouter     blacklisted? group? command? paused?
+   ↓ debouncer (8s)                        several quick messages merge into one
    ↓ pipelineServices
-      ├── memoryServices     শেষ ২০ message + rolling summary
-      ├── languageDetect     bn / banglish / en
-      ├── knowledgeServices  embed → cosine top-5
-      ├── promptServices     persona + KB + tone + guardrails
-      ├── geminiServices     function calling loop
-      └── toolServices       saveRequirement · qualifyLead · estimatePrice
-                             proposeMeetingSlots · bookMeeting · escalateToOwner
-   ↓ humanize                read → typing → delay → ছোট ছোট message
+      ├── memoryServices      last 20 messages + rolling summary
+      ├── languageDetect      bn / banglish / en
+      ├── knowledgeServices   embed query → cosine similarity → top 5   (full mode only)
+      ├── promptServices      persona, guardrails, language rule
+      ├── geminiServices      function-calling loop, throttled + retried
+      └── toolServices        escalateToOwner                           (greeting mode)
+                              + saveRequirement · qualifyLead
+                                proposeMeetingSlots · bookMeeting       (full mode)
+      ├── enforceScript       verifies the reply is in the right script, rewrites if not
+      └── promise safety net  if it promised to ask you but didn't, escalate anyway
+   ↓ humanize                 read receipt → typing → delay → short messages
 ```
 
-### শেখার দুটো পথ
+### Two ways it learns
 
-1. **Telegram** — notification আসে → তুমি উত্তর দাও → client এর কাছে যায় → `learnServices` সেটাকে reusable knowledge বানিয়ে KB তে রাখে
-2. **তুমি নিজে WhatsApp app এ reply দিলে** — Baileys সেই `fromMe` message দেখে, শেষ প্রশ্নের সাথে জোড়া লাগিয়ে একই pipeline এ পাঠায়। সাথে ওই chat এ bot ২ ঘন্টা চুপ হয়ে যায় (handover)
+**From Telegram.** You reply to a notification → the answer reaches the client →
+`learnServices` turns it into a reusable knowledge entry, embeds it, stores it.
+The next person asking something similar gets an instant answer.
 
-### যেসব guardrail আছে
+**From you, silently.** If you reply by hand in WhatsApp, Baileys sees the outgoing
+message, pairs it with the client's last question, and runs the same learning path.
+It also detects the handover and goes quiet in that chat for two hours.
 
-- **Voice note** — Gemini সরাসরি audio বোঝে, তাই voice note লেখায় রূপান্তর হয়ে একই pipeline এ যায় (২ মিনিটের বেশি হলে বাদ)
-- **দাম কখনো LLM বলে না** — `estimatePrice` tool `seed/rateCard.js` থেকে হিসাব করে দেয়
-- Deadline commit করে না, personal তথ্য দেয় না, না জানলে বানায় না
-- Group, broadcast, status — কখনো নয়
-- Bot চালু হওয়ার আগের পুরনো message এ কখনো reply যায় না
-- নিজে থেকে কাউকে প্রথম message পাঠায় না
-- Per-contact ঘন্টায় message limit
+### Guardrails
+
+- **Never quotes a price.** Not a number, not a range, not a hint. Requirements go to
+  you; pricing is a judgment call, not a lookup.
+- **Never discusses payment terms** — advance, instalments, refunds, methods. All
+  escalated. (Building a payment gateway *for a client* is a service and is discussed
+  normally — the prompt separates the two explicitly.)
+- **Never answers personal questions** about the owner: age, education, employment,
+  family, income, address. Escalated even when the answer sits in the knowledge base.
+- **Never commits to a deadline.** Rough ranges only.
+- **Never invents an answer.** When unsure, it escalates.
+- **Script consistency is verified, not just requested.** The reply is checked against
+  the language the client used, and rewritten if it drifted.
+- **A promise to ask you is always backed by a real notification.** If the model says
+  "I'll check with him" without calling the tool, the pipeline escalates anyway — so a
+  client is never left waiting on a message you never received.
+- **Voice notes** are transcribed by Gemini and handled like text (skipped over 2 minutes).
+- Ignores groups, broadcasts and status updates entirely.
+- Never replies to messages that arrived before it started, so connecting doesn't
+  trigger a flood of replies to old chats.
+- Never messages anyone first.
+- Per-contact hourly rate limit.
 
 ---
 
-## Folder
+## Project structure
+
+Flat root, no `src/`. CommonJS.
 
 ```
-controllers/  models/  routes/  middleware/     # admin REST (dashboard এর জন্য)
-whatsapp/     Baileys socket, router, commands, humanize
-services/     gemini, embedding, prompt, tools, pipeline, memory,
-              knowledge, learn, pricing, scheduling, escalation, telegram
-seed/         *.md + rateCard.js + seed script + test script
-utils/        logger, languageDetect, chunker, rateLimit
-dbConfig/     mongoose connect
+controllers/  models/  routes/  middleware/   admin REST API
+whatsapp/     Baileys socket, auth state, router, commands, humanize
+services/     gemini · embedding · prompt · tools · pipeline · memory
+              knowledge · learn · pricing · scheduling · escalation · telegram
+seed/         content files, rate card, seed scripts, test harness
+utils/        logger · languageDetect · chunker · rateLimit
+dbConfig/     mongoose connection
 ```
 
-## Admin REST
+### Admin REST API
 
-`POST /auth/signup` (প্রথম user টাই admin, তারপর বন্ধ) · `POST /auth/signin`
-`GET /contact/all` · `GET /lead/all` · `GET /lead/stats` · `GET /knowledge/all` · `POST /knowledge/add` · `DELETE /knowledge/:id` · `GET /escalation/all` · `POST /escalation/:ticket/answer` · `GET /meeting/all` · `GET /meeting/slots`
+`POST /auth/signup` (first user becomes admin, then signup closes) · `POST /auth/signin`
 
-সব admin route এ `authMiddleware` + `roleCheck('admin')`।
+`GET /contact/all` · `GET /lead/all` · `GET /lead/stats` · `GET /knowledge/all` ·
+`POST /knowledge/add` · `DELETE /knowledge/:id` · `GET /escalation/all` ·
+`POST /escalation/:ticket/answer` · `GET /meeting/all` · `GET /meeting/slots`
+
+All admin routes sit behind `authMiddleware` + `roleCheck('admin')`. Built for a
+dashboard that doesn't exist yet — Telegram covers day-to-day use.
 
 ---
 
 ## Deploy
 
-Baileys এর জন্য **always-on process** লাগে। **Vercel/Netlify চলবে না** (serverless), **Render free tier ও অচল** (১৫ মিনিট চুপ থাকলে ঘুমিয়ে যায়)।
+Baileys needs a **long-running process**. Vercel and Netlify won't work (serverless),
+and Render's free tier sleeps after 15 minutes of no HTTP traffic, which kills the
+WhatsApp connection.
 
-| কোথায় | খরচ | কেমন |
+| Host | Cost | Notes |
 |---|---|---|
-| **Railway** | ~$5/মাস | সবচেয়ে সহজ, GitHub push করলেই deploy |
-| **Oracle Cloud Always Free** | ৳0 চিরকাল | 4 vCPU / 24GB, কিন্তু Linux + pm2 নিজে setup করতে হবে |
-| **Hetzner / DigitalOcean** | ~$5/মাস | পূর্ণ নিয়ন্ত্রণ |
+| **Railway** | ~$5/mo | easiest — push to GitHub and it deploys |
+| **Oracle Cloud Always Free** | free forever | 4 vCPU / 24 GB, but you set up Linux and pm2 yourself |
+| **Hetzner / DigitalOcean** | ~$5/mo | full control |
 
-### Railway এ deploy
+### Railway
 
-1. Code GitHub এ push করো (`.env` push হবে না, `.gitignore` এ আছে)
-2. [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo**
-3. **Variables** ট্যাবে `.env` এর সব লাইন paste করো (Railway এ "Raw Editor" আছে, একসাথে সব বসানো যায়)
-4. ⚠️ **Settings → App Sleeping অবশ্যই OFF রাখো** — এটা on থাকলে HTTP request না এলে service ঘুমিয়ে যাবে, আর WhatsApp connection মরে যাবে
-5. ⚠️ **Replicas = 1** রাখো ([railway.json](railway.json) এ সেট করা আছে)। ২টা replica মানে একই WhatsApp session দুই জায়গা থেকে ব্যবহার — WhatsApp তখন দুটোকেই logout করে দেয়
+1. Push to GitHub (`.env` is gitignored)
+2. **New Project** → **Deploy from GitHub repo**
+3. **Variables** → Raw Editor → paste your entire `.env`
+4. ⚠️ **Settings → App Sleeping must be OFF.** This app holds a WebSocket, not an HTTP
+   server — if it sleeps, WhatsApp disconnects.
+5. ⚠️ **Replicas = 1** (already set in [railway.json](railway.json)). Two replicas means
+   two processes sharing one WhatsApp session, and WhatsApp logs both out.
 
-### Deploy এর পর link করবে কীভাবে
+### Linking after deploy
 
-**সাধারণত কিছুই করতে হবে না।** Session MongoDB Atlas এ থাকে (file এ নয়), তাই local এ একবার scan করা থাকলে Railway একই `DB_STRING` দিয়ে চালু হয়েই ওই session তুলে নেয়।
+**Usually nothing to do.** The session lives in MongoDB, so a server starting with the
+same `DB_STRING` picks up the existing login.
 
-⚠️ শুধু একটা শর্ত: **local এর `npm run dev` বন্ধ করো**। এক session দুই জায়গা থেকে চললে WhatsApp দুটোকেই কেটে দেয়।
+⚠️ Stop your local `npm run dev` first. One session running in two places gets both
+disconnected.
 
-নতুন করে link করতে হলে (logout হয়ে গেলে) — server এর log এ QR পড়া যায় না, তাই **pairing code** ব্যবহার করো:
+If you ever need to re-link, terminal QR codes are unreadable in deployment logs, so
+use a pairing code instead:
 
 ```
-Railway Variables এ যোগ করো:  WA_PAIRING_NUMBER=8801767982982
+WA_PAIRING_NUMBER=8801XXXXXXXXX
 ```
 
-Restart করলে ৮ অক্ষরের একটা code **তোমার Telegram এ** চলে আসবে। WhatsApp → **Linked Devices** → **Link a Device** → **"Link with phone number instead"** → code টা টাইপ করো (৩ মিনিটের মধ্যে)।
+Restart, and an 8-character code arrives **on Telegram**. In WhatsApp go to
+**Linked Devices** → **Link a Device** → **"Link with phone number instead"** and type
+it within 3 minutes. Clear the variable afterwards.
 
-Link হয়ে গেলে `WA_PAIRING_NUMBER` খালি করে দিও।
+### What Telegram tells you
 
-### Deploy এর পর যা Telegram এ পাবে
+- 🟢 WhatsApp connected
+- 🔴 Logged out — the stored session is cleared automatically, so a restart gives you a fresh pairing code
+- ⚠️ Repeated disconnects
 
-- 🟢 WhatsApp connected — চালু হলে
-- 🔴 Logged out — session মরলে (তখন session নিজে থেকেই মুছে যায়, restart করলে নতুন pairing code আসবে)
-- ⚠️ বারবার disconnect হলে
+So the assistant can't die quietly on you.
 
-মানে server এ bot চুপচাপ মরে গেলেও তুমি জানতে পারবে।
+### Health check
 
-## ⚠️ ঝুঁকি
+`GET /` returns:
 
-Baileys unofficial — WhatsApp এর ToS violate করে। Anti-ban measure (human delay, typing, rate limit, পুরনো message skip, কখনো first message নয়) রাখা আছে, কিন্তু **ban এর ঝুঁকি শূন্য নয়**। ঝুঁকি নিতে না চাইলে `whatsapp/index.js` এর জায়গায় একটা Meta Cloud API adapter লিখতে হবে — বাকি কোনো ফাইল বদলাতে হবে না।
+```json
+{ "success": true, "data": { "whatsapp": "connected", "bot": true } }
+```
+
+---
+
+## A note on risk
+
+Baileys is an unofficial WhatsApp client and using it goes against WhatsApp's Terms of
+Service. The mitigations here are real — human-like delays, typing indicators, rate
+limits, never messaging first, ignoring pre-startup messages, persisting the session so
+re-logins are rare — but **the risk of a ban is not zero.**
+
+If that risk isn't acceptable, `whatsapp/index.js` is the only file that talks to
+WhatsApp. Swapping it for a Meta Cloud API adapter leaves everything else untouched.

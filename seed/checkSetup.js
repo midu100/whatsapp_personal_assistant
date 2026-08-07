@@ -76,17 +76,48 @@ const checkMongo = async () => {
     }
 }
 
-// ====== 3. Gemini
+// ====== 3. AI
 const checkGemini = async () => {
-    head('৩। Gemini')
+    head('৩। AI')
 
-    if (!process.env.GEMINI_API_KEY) return fail('GEMINI_API_KEY নেই')
+    const usingClaude = process.env.AI_PROVIDER === 'claude'
 
+    if (!process.env.GEMINI_API_KEY) {
+        return fail(
+            'GEMINI_API_KEY নেই',
+            usingClaude
+                ? 'Claude ব্যবহার করলেও Gemini key লাগে — embedding আর voice note Claude এ হয় না'
+                : 'https://aistudio.google.com/apikey থেকে key নাও'
+        )
+    }
+
+    // ====== Claude (যদি সেটাই বেছে নেওয়া হয়)
+    if (usingClaude) {
+        if (!process.env.CLAUDE_API_KEY) {
+            fail('AI_PROVIDER=claude কিন্তু CLAUDE_API_KEY নেই', 'https://console.anthropic.com থেকে key নাও')
+        } else {
+            try {
+                const { generateText } = require('../services/claudeServices')
+                const reply = await generateText({ prompt: 'Reply with exactly: PONG' })
+
+                if (reply) ok(`${process.env.CLAUDE_MODEL || 'claude-opus-5'} সাড়া দিচ্ছে — "${reply.slice(0, 30)}"`)
+                else fail('Claude খালি উত্তর দিল')
+            } catch (error) {
+                fail(`Claude চলল না — ${error.message}`, 'CLAUDE_API_KEY আর CLAUDE_MODEL ঠিক আছে কিনা দেখো')
+            }
+        }
+
+        if (process.env.AGENT_MODE === 'full') {
+            warn('Claude + full mode — knowledge base search Gemini embedding দিয়েই চলবে (এটাই স্বাভাবিক)')
+        }
+    }
+
+    // ====== Gemini (সবসময়ই লাগে)
     try {
         const { generateText } = require('../services/geminiServices')
         const reply = await generateText({ prompt: 'Reply with exactly: PONG' })
 
-        if (reply) ok(`${process.env.GEMINI_MODEL || 'gemini-2.5-flash'} সাড়া দিচ্ছে — "${reply.slice(0, 30)}"`)
+        if (reply) ok(`${process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite'} সাড়া দিচ্ছে — "${reply.slice(0, 30)}"`)
         else fail('Gemini খালি উত্তর দিল')
     } catch (error) {
         fail(`Gemini চলল না — ${error.message}`, 'API key টা ঠিক আছে কিনা দেখো')

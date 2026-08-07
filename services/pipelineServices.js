@@ -1,4 +1,4 @@
-const { chat } = require('./geminiServices')
+const { chat } = require('./aiServices')
 const { searchKnowledge, formatForPrompt } = require('./knowledgeServices')
 const { buildSystemInstruction, holdingMessage, agentMode } = require('./promptServices')
 const { toolsForMode, executeTool } = require('./toolServices')

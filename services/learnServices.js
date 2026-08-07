@@ -1,5 +1,5 @@
 const { Type } = require('@google/genai')
-const { generateJson } = require('./geminiServices')
+const { generateJson } = require('./aiServices')
 const { addKnowledge } = require('./knowledgeServices')
 const logger = require('../utils/logger')
 

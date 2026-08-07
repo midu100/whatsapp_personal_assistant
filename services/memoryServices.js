@@ -1,6 +1,6 @@
 const contactSchema = require('../models/contactSchema')
 const conversationSchema = require('../models/conversationSchema')
-const { generateText } = require('./geminiServices')
+const { generateText } = require('./aiServices')
 const logger = require('../utils/logger')
 
 const WINDOW_SIZE = 20

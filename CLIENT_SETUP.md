@@ -2,7 +2,7 @@
 
 This guide walks you through everything we need from you. No technical background required — just follow the steps in order. It should take about 30 minutes.
 
-If you only want the checklist without the explanations, see **[REQUIRED_FROM_CLIENT.md](REQUIRED_FROM_CLIENT.md)**.
+**In a hurry?** Skip to [Send everything back](#send-everything-back) at the bottom — that's the complete list. Come back here for the how-to on anything you're unsure about.
 
 ---
 
